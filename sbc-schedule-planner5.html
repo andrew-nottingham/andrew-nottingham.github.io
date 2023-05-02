@@ -1,0 +1,984 @@
+<html>
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SBC Service Schedule Planner</title>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css"> 
+<style> 
+.container { 
+width: 1200px; 
+} 
+.remove { 
+width: 30px; 
+height: 30px; 
+font-size: 20px; 
+background-color: tomato; 
+color: white; 
+border: none; 
+border-radius: 15px; 
+} 
+.insert { 
+width: 30px; 
+height: 30px; 
+font-size: 20px; 
+background-color: green; 
+color: white; 
+border: none; 
+border-radius: 15px; 
+} 
+.tinyremove { 
+width: 18px; 
+height: 18px; 
+font-size: 12px; 
+background-color: tomato; 
+color: white; 
+border: none; 
+border-radius: 9px;  
+} 
+.tinyinsert { 
+width: 18px; 
+height: 18px; 
+font-size: 12px; 
+background-color: green; 
+color: white; 
+border: none; 
+border-radius: 9px; 
+} 
+.move { 
+width: 30px; 
+height: 30px; 
+font-size: 20px; 
+background-color: yellow; 
+color: black; 
+border: none; 
+border-radius: 15px; 
+} 
+.gV { 
+        width: 130px; 
+        height: 40px; 
+        font-size: 16px; 
+        background-color: lightseagreen; 
+	color: white;
+	display: block;
+        border: 1px solid black;
+        font-family: Arial, Helvetica, sans-serif;
+} 
+button:hover { 
+cursor: pointer; 
+} 
+tr:hover { 
+cursor: move; 
+} 
+.Dure {
+  text-align: center;
+}
+.tt {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+th, td {
+  padding: 5px;
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+.twb {
+  padding: 5px;
+  border: 1px solid white;
+  border-collapse: collapse; 
+  font-size: 16px;
+  text-align: center;
+  font-family: Arial, Helvetica, sans-serif;
+}
+#file-input-label {
+	width: 130px;
+        height: 40px;
+        font-size: 16px;
+	cursor: pointer;
+	background-color: lightseagreen;
+	color: white;
+	display: block;
+        border: 1px solid black;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#NOT-file-input-label, #NOT-new-input, #NOT-save-schedule, #NOT-email-schedule, #NOT-calc-timings {
+	width: 130px;
+        height: 40px;
+        font-size: 16px;
+	cursor: pointer;
+	background-color: #DDDDDD;
+	color: gray;
+	display: block;
+        border: 1px solid white;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#file-input {display: none;}
+@charset "UTF-8";
+
+.popup {
+  display: none;
+  position: fixed;
+  padding: 10px;
+  width: 70px;
+  left: 20%;
+  margin-left: -150px;
+  border-style: solid;
+  border-color: darkorange;
+  height: 70px;
+  top: 20%;
+  margin-top: -100px;
+  background: #FFF;
+  z-index: 20;
+}
+
+#popup1, #popup8, #popup9 {
+  -webkit-box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
+  box-shadow:  150px 125px 80px 150px rgba(0, 0, 0, 0.6);
+}
+#popup2, #popup3, #popup4, #popup5, #popup6, #popup7, #popup10, #popup11, #popup12 {
+  -webkit-box-shadow:  0px 0px 0px 9999px rgba(0, 0, 0, 0.5);
+  box-shadow:  50px 25px 80px 50px rgba(0, 0, 0, 0.6);
+}
+
+.message {
+  background-color: white;
+  padding: 0.5em 1em 1em 1.5em;
+  border-top-width: 3px;
+  border-top-style: solid;
+  border-left-width: 6px;
+  border-left-style: solid;
+  border-bottom-width: 1px;
+  border-bottom-style: solid;
+  border-right-width: 1px;
+  border-right-style: solid;
+  border-radius: 3px;
+  position: relative;
+  line-height: 1.5;
+}
+.message:before {
+  color: white;
+  width: 1.5em;
+  height: 1.5em;
+  position: absolute;
+  top: 1em;
+  left: -3px;
+  border-radius: 50%;
+  transform: translateX(-50%);
+  font-weight: bold;
+  line-height: 1.5;
+  text-align: center;
+}
+.message--warning {
+  border-left-color: darkorange;
+  border-top-color: darkorange;
+  border-right-color: darkorange;
+  border-bottom-color: darkorange;
+}
+.message--warning:before {
+  background-color: darkorange;
+  content: "!";
+}
+.custom-file-input {
+  color: transparent;
+}
+.custom-file-input::-webkit-file-upload-button {
+  visibility: hidden;
+}
+.custom-file-input::before {
+  width: 130px; 
+  height: 37px;
+  font-family: Arial, Helvetica, sans-serif;
+  content: 'Choose File to\A Send to SBC';
+  white-space: wrap;
+  color: white;
+  display: block;
+  background-color: lightseagreen;
+  border: 1px solid black;
+  outline: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+  font-weight: 400;
+  font-size: 12pt;
+  display: flex;
+  justify-content: center;
+}
+.custom-file-input:hover::before {
+  border-color: black;
+}
+.custom-file-input:active {
+  outline: 0;
+}
+.custom-file-input:active::before {
+  background: -webkit-linear-gradient(top, #e3e3e3, #f9f9f9); 
+}
+</style> 
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script> 
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script> 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js" integrity="sha512-csNcFYJniKjJxRWRV1R7fvnXrycHP6qDR21mgz1ZP55xY5d+aHLfo9/FcGDQLfn2IfngbAHd8LdfsagcCqgTcQ==" crossorigin = "anonymous" referrerpolicy = "no-referrer"> </script>
+
+<script>
+  var idcount;
+  var leadInDuration = 0;
+  var liveStreamStartTime = '00:00';
+  var GoTime = '';
+  var rowRemMin;
+  idcount = 1;
+  let newRowsHTML = '';
+  let nameOfFile = '';
+  let fileName = '';
+  let cellId = '';
+  let minsFormat = /^\d{1,2}$/;
+
+// disables return and enter keys so that the user doesn't surprise themselves when new rows are added by accidental pressing of enter key
+document.addEventListener('keypress', function (e) {
+            if (e.keyCode === 13 || e.which === 13) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+// disables use of '|' key, because this is used as a separator in the schedule storage files
+document.addEventListener('keypress', function (f) {
+            if (f.keyCode === 124 || f.which === 124) {
+                f.preventDefault();
+                return false;
+            }
+        });
+
+// functions to show and hide complete PopUp information boxes
+function showPU(PUname) {document.getElementById(PUname).style.display ='block';}
+function hidePU(PUname) {document.getElementById(PUname).style.display ='none';}
+
+// function to either accept the pull-down choice OR to hide the pull-down menu and reveal the free-text input box for cell "1nnn" 
+// (where "1nnn" is passed to the function through the variable "name")
+function showfield(indexNum){
+  indexNum = indexNum.toString().padStart(3, '0');
+  var MediaRefValue = document.getElementById('Col3Media' + indexNum).value;
+  if(MediaRefValue == 'Other') {
+// If the free-text option was selected: 
+// a) hide the whole pull-down menu
+    document.getElementById('Col3Left' + indexNum).hidden = true; 
+// b) show the previously hidden option (though it won't be visible due to step a))
+    document.getElementById('Col3Hide' + indexNum).style.display = "block";
+// c) enter the untypeable character as the pull-down menu's choice
+    document.getElementById('Col3Media' + indexNum).value = '™';
+// c) erase any existing text from the free-text box
+    document.getElementById('Col3Right' + indexNum).value = '-';
+// d) make the the free-text box visible
+    document.getElementById('Col3Right' + indexNum).type = 'text';
+  } else { 
+//  enter the untypeable character as the free-text box entry
+    document.getElementById('Col3Right' + indexNum).value = '™';
+  }
+}
+
+//function to check that a valid date has been typed into the first box in the form
+function validatedate(inputID)
+  {
+  var checkStr = document.getElementById(inputID);  
+  var dateformat = /^(0?[1-9]|[12][0-9]|3[01])[\/\-](0?[1-9]|1[012])[\/\-]\d{2}$/;
+  // Match the date format through regular expression
+  if(checkStr.value.match(dateformat))
+    {
+    checkStr.focus();
+    //Test which seperator is used '/' or '-'
+    var opera1 = checkStr.value.split('/');
+    var opera2 = checkStr.value.split('-');
+    lopera1 = opera1.length;
+    lopera2 = opera2.length;
+    // Extract the string into month, date and year
+    if (lopera1>1)
+      {
+      var pdate = checkStr.value.split('/');
+      }
+    else if (lopera2>1)
+      {
+      var pdate = checkStr.value.split('-');
+      }
+    var dd = parseInt(pdate[0]).toString().padStart(2, '0');
+    var mm  = parseInt(pdate[1]).toString().padStart(2, '0');
+    var yy = parseInt(pdate[2]).toString().padStart(2, '0');
+//alert(dd);
+//alert(mm);
+//alert(yy);
+    // Create list of days of a month [assume there is no leap year by default]
+    var ListofDays = [31,28,31,30,31,30,31,31,30,31,30,31];
+    if (mm==1 || mm>2)
+      {
+      if (dd>ListofDays[mm-1])
+        {
+        showPU('popup2');
+        return false;
+      }
+    }
+    if (mm==2)
+    {
+      var lyear = false;
+      if ( (!(yy % 4) && yy % 100) || !(yy % 400)) 
+        {
+        lyear = true;
+        }
+      if ((lyear==false) && (dd>=29))
+        {
+        showPU('popup2');
+        return false;
+        }
+      if ((lyear==true) && (dd>29))
+        {
+        showPU('popup2');
+        return false;
+        }
+      }
+    }
+    else
+    {
+    showPU('popup2');
+    checkStr.focus();
+    return false;
+    }
+  checkStr.value = dd + '-' + mm + '-' + yy;
+  return true;
+  };
+
+// function to add a new row below the current one, filling it with data provided in the call-up of the function
+function addRow(idRef, cellA, cellB, cellC, cellD, cellE, cellF, rbC, rbA, rbP) {  
+    var strCn;
+    var strCy;
+    var strAn;
+    var strAy;
+    var strPn;
+    var strPy;
+    var bgCC;
+    var bgAC;
+    var bgPC;
+//alert (idRef + '   ' + cellA + '   ' + cellB + '   ' + cellC + '   ' + cellD + '   ' + cellE + '   ' + cellF + '   ' + rbC + '   ' + rbA + '   ' + rbP);
+    if (rbC == 'y') {strCy = ' checked'; strCn = ''; bgCC = 'white';} else {strCn = ' checked'; strCy = ''; bgCC = 'pink';} 
+    if (rbA == 'y') {strAy = ' checked'; strAn = ''; bgAC = 'white';} else {strAn = ' checked'; strAy = ''; bgAC = 'pink';} 
+    if (rbP == 'y') {strPy = ' checked'; strPn = ''; bgPC = 'white';} else {strPn = ' checked'; strPy = ''; bgPC = 'pink';} 
+    idRef = idRef.toString().padStart(3, '0');
+    // construct a long string containing the html code for a row in the lower table and append it to the string 'newRowsHTML'
+    newRowsHTML = newRowsHTML + '<tr><td nowrap width="3%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="1" class="Dure" id="Col0' + idRef + '" value = "' + cellA + '"></div></td>'+
+                       '<td nowrap width="4%"><div style="font-family: Calibri, sans-serif; font-size: 1em; text-align: center" id="ColTime' + idRef + '"></div></td>'+
+                       '<td nowrap width="20%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="27" name="Activity' + idRef + '" id="Col1' + idRef + '" value = "' + cellB + '"></div></td>'+
+                       '<td nowrap width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="8" name="Resp' + idRef + '" id="Col2' + idRef + '" value = "' + cellC + '"></div></td>';
+    if (cellD == '™') {
+      newRowsHTML = newRowsHTML + '<td nowrap width="10%"><div style="font-family: Calibri, sans-serif; font-size: 1em" id="Col3Left' + idRef + '">'+
+                      '<select id="Col3Media' + idRef + '" onchange="showfield(' + idRef + ');">'+
+                      '<option selected="selected">Please select ...</option> <option value="PowerPoint">PowerPoint</option> <option value="Video">Video</option> <option value="Other">Other</option>'+
+                      '<option hidden id="Col3Hide' + idRef + '" value="™">™</option>'+
+                      '</select> </div>'+
+                      '<div style="font-family: Calibri, sans-serif; font-size: 1em"> <input type="hidden" size="10" name="Type' + idRef + '" id="Col3Right' + idRef + '"> </div> </td>'
+    } else {
+      newRowsHTML = newRowsHTML + '<td nowrap width="10%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="10" name="Type' + idRef + '" id="Col3' + idRef + '" value = "' + cellD + '"></div></td>';
+    }
+    newRowsHTML = newRowsHTML + '<td nowrap width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="8" name="Orig' + idRef + '" id="Col4' + idRef + '" value = "' + cellE + '"></div></td>'+
+                       '<td nowrap width="5%" align="center" id="Camr' + idRef + '" bgcolor="' + bgCC + '"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio"' + strCy +' name="Cam' + idRef + '" value="y" id="CamrY' + idRef + '">'+
+                                                                                '<input type="radio"' + strCn +' name="Cam' + idRef + '" value="n" id="CamrN' + idRef + '"></div></td>'+
+                       '<td nowrap width="5%" align="center" id="Audi' + idRef + '" bgcolor="' + bgAC + '"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio"' + strAy +' name="Audio' + idRef + '" value="y" id="AudiY' + idRef + '">'+
+                                                                                '<input type="radio"' + strAn +' name="Audio' + idRef + '" value="n" id="AudiN' + idRef + '"></div></td>'+
+                       '<td nowrap width="5%" align="center" id="Proj' + idRef + '" bgcolor="' + bgPC + '"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio"' + strPy +' name="Proj' + idRef + '" value="y" id="ProjY' + idRef + '">'+
+                                                                                '<input type="radio"' + strPn +' name="Proj' + idRef + '" value="n" id="ProjN' + idRef + '"></div></td>'+
+                       '<td nowrap width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="19" name="OnlineOnly' + idRef + '" id="Col5' + idRef + '" value = "' + cellF + '"></div></td>'+
+                       '<td nowrap width="6%" align="center"><a onclick ="opentr(this);"><button class="insert">+</button></a></td>'+
+                       '<td nowrap width="6%" align="center"><a onclick ="closetr(this);"><button class="remove">-</button></a><input type="hidden" name="Line' + idRef + '" value="' + idRef + '" id="Col6' + idRef + '"></td></tr>';
+}
+
+// function to add a new (empty) row below the one in which the user has just clicked on the green "+" button
+function opentr(el) {
+    var currTR = el.closest('tr');
+    var newTR = document.createElement('tr');
+    idcount = idcount + 1;
+    idRef = idcount.toString().padStart(3, "0");
+    // construct+write a long string containing the html code for an empty row in the lower table
+    newTR.innerHTML = '<td nowrap width="3%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="1" class="Dure" id="Col0' + idRef + '" value="1"></div></td>'+
+                      '<td nowrap width="4%"><div style="font-family: Calibri, sans-serif; font-size: 1em; text-align: center" id="ColTime' + idRef + '"></div></td>'+
+                      '<td nowrap width="20%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="27" name="Activity' + idRef + '" id="Col1' + idRef + '"></div></td>'+
+                      '<td nowrap width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="8" name="Resp' + idRef + '" id="Col2' + idRef + '"></div></td>'+
+                      '<td nowrap width="10%"><div style="font-family: Calibri, sans-serif; font-size: 1em" id="Col3Left' + idRef + '">'+
+                      '<select id="Col3Media' + idRef + '" onchange="showfield(' + idRef + ');">'+
+                      '<option selected="selected">Please select ...</option> <option value="PowerPoint">PowerPoint</option> <option value="Video">Video</option> <option value="Other">Other</option>'+
+                      '<option hidden id="Col3Hide' + idRef + '" value="™">™</option>'+
+                      '</select> </div>'+
+                      '<div style="font-family: Calibri, sans-serif; font-size: 1em"> <input type="hidden" size="10" name="Type' + idRef + '" id="Col3Right' + idRef + '" value="-"> </div> </td>'+
+                      '<td nowrap width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="8" name="Orig' + idRef + '" id="Col4' + idRef + '" value="-"></div></td>'+
+                      '<td nowrap width="5%" align="center" id="Camr' + idRef + '" bgcolor="white"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio" checked name="Cam' + idRef + '" value="y" id="CamrY' + idRef + '">'+
+                                                                                '<input type="radio" name="Cam' + idRef + '" value="n" id="CamrN' + idRef + '"></div></td>'+
+                      '<td nowrap width="5%" align="center" id="Audi' + idRef + '" bgcolor="white"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio" checked name="Audio' + idRef + '" value="y" id="AudiY' + idRef + '">'+
+                                                                                '<input type="radio" name="Audio' + idRef + '" value="n" id="AudiN' + idRef + '"></div></td>'+
+                      '<td nowrap width="5%" align="center" id="Proj' + idRef + '" bgcolor="white"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="radio" checked name="Proj' + idRef + '" value="y" id="ProjY' + idRef + '">'+
+                                                                                '<input type="radio" name="Proj' + idRef + '" value="n" id="ProjN' + idRef + '"></div></td>'+
+                      '<td nowrap width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="19" name="OnlineOnly' + idRef + '" id="Col5' + idRef + '" value="-"></div></td>'+
+                      '<td nowrap width="6%" align="center"><a onclick ="opentr(this);"><button class="insert">+</button></a></td>'+
+                      '<td nowrap width="6%" align="center"><a onclick ="closetr(this);"><button class="remove">-</button></a><input type="hidden" name="Line' + idRef + '" value="' + idRef + '" id="Col6' + idRef + '"></td>';
+    currTR.parentNode.insertBefore(newTR, currTR.nextSibling);
+    document.querySelectorAll('input[type=radio]').forEach((input) => {input.addEventListener("change", activateElement);});
+    }
+
+// function to delete the current row in which the user has just clicked on the red '-' button
+function closetr(el) {
+    var nextTR = el.closest("tr");
+    document.all("dyntable").deleteRow(nextTR.rowIndex);
+    idcount = idcount -1;
+    }
+
+// JQuery function to allow users to move the rows in the main body (only) of the table
+$(function() { 
+    $('tbody').sortable(); 
+}); 
+
+// function that calculates times for second column from durations (first column) and start time
+function CalcTime() {
+    var OKFormat = true;
+    var OKFormatSum = true;
+//alert ('0    ' + idcount);
+    var jT;
+    var iT;
+    var iT0 = 6;
+    var kT;
+    var RowID = '0';
+    const LastCellNo = [];
+    const CellTime = [];
+    var rowTimeMin = 0;
+    //let timeFormat = /^\d{1,2}:\d{2}([ap]m)?$/;
+    var input = document.getElementById("FName").elements;
+    CellTime[0] = liveStreamStartTime;
+//alert ('1    ' + CellTime[0] + '    ' + idcount);
+    // gather the input[] element numbers for the last data item in a row (= the 3 digit row code) 
+    // for each data row, and place into an array (LastCellNo)
+    for (kT = 1; kT < idcount + 1 ; kT++) {
+//alert ('2    ' + kT);
+        for (iT = iT0; iT < iT0 + 7; iT++) {
+//alert ('3    ' + kT + '    ' + iT);
+            jT = input[iT].value + '|' + input[iT+1].value + '|' + input[iT+2].value + '|' + input[iT+3].value + '|' + input[iT+4].value + '|' + input[iT+5].value;
+            if (jT == 'y|n|y|n|y|n') {
+//alert ('4    ' + kT + '    ' + iT + '    ' + jT);
+                LastCellNo[kT] = iT+9;
+//alert ('4.1    ' + kT + '    ' + LastCellNo[kT]);
+                //FirstCellNo[kT] = iT0;
+            }
+        }
+//alert ('5    jT = ' + jT + '    iT = ' + iT + '    iT0 = ' + iT0);
+        iT0 = LastCellNo[kT] + 1;
+    }
+//alert ('6.1, ' + FirstCellNo[1] + ', ' + LastCellNo[1] + '      6.2, ' + FirstCellNo[2] + ', ' + LastCellNo[2] + '      6.3, ' + FirstCellNo[3] + ', ' + LastCellNo[3]);     
+    // now work out the time for each row by adding the duration from the previous row to the previous row's time
+    // hh:mm 'StartTime' is first turned into minutes before mm duration is added and then it's turned back to hh:mm
+//alert ('7.00    ' + idcount + '    ' + CellTime[0] + '    ' + LastCellNo[0]);
+    for (kT = 1; kT < idcount + 1; kT++) {
+//alert ('7    ' + kT + ', ' + CellTime[kT-1]);
+        if (kT != 1) {
+            RowID = input[Number(LastCellNo[kT-1])].value;
+            cellId = 'Col0' + RowID;
+//alert ('7.2    ' + kT + '    ' + CellTime[kT-1]);
+            let rowTimeSubStr = CellTime[kT-1].split(':'); 
+            rowTimeMin = (Number(rowTimeSubStr[0]) * 60) + Number(rowTimeSubStr[1]);
+            StartDure = document.getElementById(cellId).value;
+            OKFormat = StartDure.match(minsFormat);
+            if (!OKFormat) {
+                document.getElementById('PU10').innerHTML = 'You have entered something other than 0-99 minutes in Column 1, Row ' + RowID + '. Please close this pop-up, corrrect the entry and re-calculate timings.'
+                OKFormatSum = false;
+                document.getElementById(cellId).focus();
+                showPU('popup10');
+            }
+//alert ('7.3    ' + kT + '    ' + cellId + ',    ' + CellTime[kT-1] + ',    ' + StartDure);
+        } else {
+//alert ('7.0.1    ');
+            let rowTimeSubStr = CellTime[kT-1].split(':'); 
+            rowTimeMin = (Number(rowTimeSubStr[0]) * 60) + Number(rowTimeSubStr[1]); 
+            StartDure = leadInDuration;
+//alert ('7.1    ' + kT + '    ' + liveStreamStartTime + ', ' + StartDure);
+        } 
+        rowTimeMin = rowTimeMin + Number(StartDure);
+//alert ('8    ' + rowTimeMin);
+        rowRemMin = rowTimeMin % 60;
+        CellTime[kT] = ((rowTimeMin/60 |0) % 24) + ':' +  rowRemMin.toString().padStart(2, '0');
+        RowID = input[Number(LastCellNo[kT])].value;
+        cellId = 'ColTime' + RowID;
+//alert ('9    ' + cellId + '    ' + CellTime[kT] + '    ' + kT + '    ' + Number(LastCellNo[kT]) + '    ' + input[Number(LastCellNo[kT])].value + '    ' + RowID);
+        // finally it's written to Column 2 in the main table
+        if (OKFormatSum) { document.getElementById(cellId).innerHTML = CellTime[kT]; } else { document.getElementById(cellId).innerHTML = ' '; }
+    } 
+}
+
+// function that prepares a long string (m) by concatenation of all the data to be written to a blob-enabled file, using '|' as a separator
+function CreateTextFile() {
+    if (validatedate("Head0")) {
+        var m = "";
+        var l = 0;
+        var j = 20;
+        var RCamName;
+        var RAudName;
+        var RPrjName;
+        var selectedCam;
+        var selectedAud;
+        var selectedPrj;
+// get the data from the heading fields in the form, and from each row (all found in the single input[] array), and place in string 'm'
+        var input = document.getElementById("FName").elements;
+//alert('input length ' + input.length);
+        for (var i = 0; i < input.length - 8; i++) {
+            var a = input[i].value;
+            if ((a != '™') && (a != 'Please select ...')) {m = m + a + "|";} else {j = j+ 1};
+// find out which radio boxes are checked in the row and insert a 'y' or 'n', as appropriate, into the 'm' string 
+//alert ('j=' + j + '   i=' + i + '   a=' + a +'^^^');
+            if ((j == i) && (j > 10)) {
+                RCamName = 'Cam' + a;
+                RAudName = 'Audio' + a;
+                RPrjName = 'Proj' + a;
+                selectedCam = document.querySelector('input[name="'+RCamName+'"]:checked');
+                if (selectedCam) {
+                    m = m + selectedCam.value + '|';
+                    l = l+1;
+                }
+                selectedAud = document.querySelector('input[name="'+RAudName+'"]:checked');
+                if (selectedCam) {m = m + selectedAud.value +'|';}
+                selectedPrj = document.querySelector('input[name="'+RPrjName+'"]:checked');
+                if (selectedCam) {m = m + selectedPrj.value +'|';}
+                j = j + 15;
+            }
+        }
+// add the counter of the number of lines and the contents of the form's final 'notes' field
+        m = l + '|' + m + idcount + '|' + document.getElementById("NotesRow").value + '|' + leadInDuration + '|' + liveStreamStartTime;
+        var blob = new Blob([m], {type: 'text/plain;charset=utf-8',});
+// prepare the file name, write the file to disc and then tell the user about this
+        nameOfFile = 'ServiceSchedule[' + document.getElementById("Head0").value + '].txt';
+        saveAs(blob, nameOfFile);
+document.getElementById("popup3Text").innerHTML = '<p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">FILE INFORMATION</div><br><div><span style="font-family: Calibri, sans-serif; font-size: 1em">Your service schedule was saved, in your DOWNLOADS folder, as:</span><span style="font-family: Calibri, sans-serif; color: blue; font-size: 1em"><br>&nbsp; &nbsp;' + nameOfFile + '<br></span><span style="font-family: Calibri, sans-serif; color: black; font-size: 1em">If this is not the first time you\'ve saved it, then a number in () is added as the revision number.</span></div></p><button type="submit" onclick="hidePU(\'popup3\')") class="gV">Close Info Box</button>';
+        showPU('popup3');
+        return true;
+    } else {return false;}
+}
+
+// function to add one empty row to a new (empty) table
+function StartNewSched() {
+    addRow(1, 1, '', '', '™', '-', '-', 'y', 'y', 'y');
+    // display the lower table on the web-page
+    var divref = document.getElementById('tabbody');
+    divref.innerHTML = newRowsHTML;
+    document.querySelectorAll("input[type=radio]").forEach((input) => {input.addEventListener('change', activateElement);});
+    // replace live green buttons with dead grey buttons
+    document.querySelector("#file-input-label").style.display = 'none';
+    document.getElementById("NOT-file-input-label").style.display = 'block';
+    document.getElementById("NOT-new-input").style.display = 'block';
+    document.getElementById("new-input").style.display = 'none';
+    document.getElementById("NOT-calc-timings").style.display = 'none';
+    document.getElementById("calc-timings").style.display = 'block';
+    document.getElementById("NOT-save-schedule").style.display = 'none';
+    document.getElementById("save-schedule").style.display = 'block';
+    document.getElementById("NOT-email-schedule").style.display = 'none';
+    document.getElementById("email-schedule").style.display = 'block';
+}
+
+// function to set up an email for the user to send
+function sendEmail (input) {
+    fileName = input.files[0].name; 
+    window.open("mailto:andrew.nottingham@aol.com?subject=SBC Service Schedule&body=Please attached the file named ---' " + fileName + " '--- from your 'downloads' folder" + "%0d%0a%0d%0a" + "Then send this email" + "%0d%0a%0d%0a" + "Thank you.");
+}
+
+</script>
+</head>
+
+<body onload="showPU('popup11');">
+
+<!-- prepare the Pop-Up information text that will be displayed when the Pop-Ups are called -->
+
+<div class="popup" id="popup1">
+  <div class="message  message--warning" style="width:600px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">INSTRUCTIONS</div><br><div><span style="font-family: Calibri, sans-serif; font-size: 1em"><span style="color: blue">&#9654;</span>  If you have previously used this webpage, you can choose the file you stored last time by clicking on the "Open Existing Schedule File" button, on the right, near the top of the page.<br><span style="color: blue">&#9654;</span>  If you want to start a new schedule, click on the "Start New Schedule" button and start filling in the boxes in the table. In new rows you can choose common media types from a drop-down list or define your own media type by choosing 'Other'.<hr>&nbsp; &nbsp;<span style="color: red">&#9733;</span> Click on the&nbsp;<span class="tinyinsert">&nbsp;&#10009;&nbsp;</span>&nbsp;button at the end of a row, to add a new (empty) row below the current row.<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> Click on the&nbsp;<strong><span class="tinyremove">&nbsp; &nbsp;&#822;&nbsp; &nbsp;</span></strong>&nbsp;button at the end of a row, to delete the current row (and all the data on it) [no 2nd chance!].<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> To move the rows in the main part of the table Up or Down, simply grab them (outside of a fill-in box) and drag the row up or down to a new position in the sequence.<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> To calculate timings (which will appear in the 2nd column), enter into Column 1 the duration of each item as 0-99 minutes. Then choose the 'Calculate/Re-calculate timings' button. By default, every item lasts 1 minute.<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> If you want to erase <u>everything</u> (so that you can choose, again, whether to use a saved schedule or to start with a blank page), then you can choose the "Go back to a blank page" button on the right.  Any files that you've already saved won't be deleted.<hr><span style="color: blue">&#9654;</span>  When you are happy with your schedule, you can save it to the 'downloads' folder on your computer.<br><span style="color: blue">&#9654;</span>  Pressing the bottom button on the right will tell you how to e-mail any previously saved version to SBC's Audio-Visual team.</span></div></p>
+  <button type="submit" onclick="hidePU('popup1')" class="gV">Close Instructions</button>
+  </div>
+</div>
+
+<div class="popup" id="popup2">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">INVALID DATE</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em">You must enter the date in the form d-m-yy or d/m/yy - e.g. 7-8-23 or 21/4/24.  Close this pop-up and correct the date box (top left).</div></p>
+  <button type="submit" onclick="hidePU('popup2')" class="gV">Close Warning</button>
+  </div>
+</div>
+
+<div class="popup" id="popup3">
+  <div class="message  message--warning" style="width:300px" id="popup3Text">
+  <p>&nbsp;</p>
+  </div>
+</div>
+
+<div class="popup" id="popup4">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">NO FILE SELECTED</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em">You didn't select a file, so I couldn't load it for you!</div></p>
+  <button type="submit" onclick="hidePU('popup4')" class="gV">Close Info Box</button>
+  </div>
+</div>
+
+<div class="popup" id="popup5">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">INCORRECT FILE TYPE</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em">This program can only read text files (often identified to you by their ".txt" extension on Windows machines.</div></p>
+  <button type="submit" onclick="hidePU('popup5')" class="gV">Close File Warning</button>
+  </div>
+</div>
+
+<div class="popup" id="popup6">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">FILE TOO LARGE</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em">This program can only handle files smaller than 2 mb. Choose another file.</div></p>
+  <button type="submit" onclick="hidePU('popup6')" class="gV">Close File Warning</button>
+  </div>
+</div>
+
+<div class="popup" id="popup7">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">FILE WARNING</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em">I was unable to read that file - and I'm not sure why! Let Andrew know and he may be able to give me some t.l.c.!</div></p>
+  <button type="submit" onclick="hidePU('popup7')" class="gV">Close File Warning</button>
+  </div>
+</div>
+
+<div class="popup" id="popup8">
+  <div class="message  message--warning" style="width:600px">
+  <p>
+      <div style="font-family: Calibri, sans-serif; font-size: 1.5em">SEND SCHEDULE TO AV TEAM BY E-MAIL</div><br>
+      <div>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"><strong>If your email is accessed via a browser window</strong> (e.g. in Chrome or Edge), you will need to compose an email to </span>
+          <span style="font-family: Calibri, sans-serif; color: blue; font-size: 1em"><strong>sbc.av.2021@gmail.com</strong></span>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> and then select a text file with the name </span>
+          <span style="font-family: Calibri, sans-serif; color: red; font-size: 1em"><strong>ServiceSchedule[date]</strong></span>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> from your </span>
+          <span style="font-family: Calibri, sans-serif; color: red; font-size: 1em"><strong>downloads</strong></span>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> folder. If there are several files with this name, you should usually choose the one with the highest revision number "(no.)" after the file name, as this will be your most recent edit.<br>Once you've done that, you can press on the 'Cancel. Don't e-mail' button below to close this notification window.</span>
+      </div>
+      <hr>
+      <div>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"><strong>If you use an email program ('app')</strong> use the following process:</span><br>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> 1) Make sure your browser allows 'pop-ups' for this web-page program.</span><br>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> 2) Make sure your email program ('app') is already active.</span><br>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> 3) Press the 'Choose File' (called 'Browse' on some browsers) button below and select the </span>
+          <span style="font-family: Calibri, sans-serif; color: red; font-size: 1em"><strong>ServiceSchedule[date]</strong></span>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> file from your </span>
+          <span style="font-family: Calibri, sans-serif; color: red; font-size: 1em"><strong>downloads</strong></span>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> folder. If there are several files with this name, you should usually choose the one with the highest revision number "(no.)" after the file name, as this will be your most recent edit.</span><br>
+          <span style="font-family: Calibri, sans-serif; font-size: 1em"> 4) Look for the email window that opens on-screen; attach the file named in the newly composed e-mail message; and then send the e-mail with the schedule attached.<br></span>
+      </div>
+      <table style="border: none;">
+           <tr style="border: none;">
+                <td style="border: none; vertical-align: top;">
+                     <input class="custom-file-input" type="file" onchange="sendEmail(this); hidePU('popup8');" />
+                </td>
+                <td style="border: none; vertical-align: top;"><button type="submit" onclick="hidePU('popup8');" class="gV">Cancel.<br>Don't E-mail</button></td>
+            </tr>
+      </table>
+  </p>
+  </div>
+</div>
+
+<div class="popup" id="popup9">
+  <div class="message  message--warning" style="width:600px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">RELOAD</div><br><div><pan style="font-family: Calibri, sans-serif; font-size: 1em">You have asked to go back to a blank page. If you continue, any unsaved work on this page will be lost.  So if you want to keep any of your current work that you haven't already saved, press the 'Cancel' button below and then save your work before returning here. <br><br>If you are sure you want to start afresh, press the 'Re-load Now!' button below.</span><br><br><span style="font-family: Calibri, sans-serif; font-size: 1em">Whatever you decide, no saved files will be deleted.</span></div></p>
+    <table style="border: none;"><tr style="border: none;"><td style="border: none;"><button type="submit" onclick="location.reload()" class="gV">Re-load Now!</button></td><td style="border: none;">&nbsp;&nbsp;&nbsp;&nbsp;</td><td style="border: none"><button type="submit" onclick="hidePU('popup9')" class="gV">Cancel Re-load</button></td></tr></table>
+  </div>
+</div>
+
+<div class="popup" id="popup10">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">MINUTES</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em"></div></p>
+  <button type="submit" onclick="hidePU('popup10');" class="gV">Close Warning</button>
+  </div>
+</div>
+
+<div class="popup" id="popup11">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">WELCOME</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em"></div></p>This software is designed to help you build a Service Schedule. You have the option either:<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> To read and edit an existing schedule; or<br>&nbsp; &nbsp;<span style="color: red">&#9733;</span> To start a new schedule.<br><br>
+  <button type="submit" onclick="hidePU('popup11');" class="gV">OK</button>
+  </div>
+</div>
+
+<div class="popup" id="popup12">
+  <div class="message  message--warning" style="width:300px">
+    <p><div style="font-family: Calibri, sans-serif; font-size: 1.5em">NEW SCHEDULE</div><br><div style="font-family: Calibri, sans-serif; font-size: 1em"></div></p> The normal Start Time for Sunday morning services, and the number of minutes prior to that when the LiveStream is due to start are given in the two boxes below. If these are OK, just press the "Continue" button. If they aren't, change them and then press the "Continue" button.<br><br>Service Start Time <input type="text" size="3" id="GoTime" value="10:30" /> (hrs:min)<br>LiveStream Run-in <input type="number" size="2" id="leadInDuration" min="0" max="99" step="1" value="5" /> (min).<br><span id="PU12warning" style="font-family: Calibri, sans-serif; font-size: 1.05em; color: red;"></span><br>
+  <button type="submit" onclick="setStartTimes();" class="gV">Continue</button><br>
+[<i>If, later in your preparation of a schedule, you want to change the start time, then  click on the topmost entry in either the Duration or Time columns</i>]
+  </div>
+</div>
+
+<!-- set out the bare outer table/form containing everything on the web-page -->
+
+<table><tr class="twb"><td class="twb">
+<p><div style="font-family: Calibri, sans-serif; font-size: 2.5em"><strong>Service Schedule </strong>for
+hybrid delivery (in-building &amp; streamed)&nbsp;&nbsp;&nbsp;&nbsp;</div></p>
+
+<!-- define the form that will collect data from the user -->
+<form action="javascript:void(0);" id="FName">
+
+<!-- set out a table (within the left column of the outer table) with empty inputs -->
+
+<table width="1200" class="tt">
+<thead>
+<tr>
+    <td width="20%" align="right"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Date:</strong> (d-m-yy or d/m/yy)</div></td>
+    <td width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="20" name="array[]" id="Head0" /></div></td>
+    <td width="65%" rowspan="5"><div style="margin-bottom: 5px"><span style="font-family: Calibri, sans-serif; font-size: 1em"><strong>The Originator </strong>(column
+6) is responsible for uploading any videos to the SBC YouTube site <i><u>at least 60 hours</u></i> before the date/time of the service and emailing any PowerPoints + a copy of this schedule to <a href="mailto:sbc.av.2021@gmail.com">sbc.av.2021@gmail.com</a> by the same time. Depending on your e-mail program, the last green button may help you send it!</span></div>
+
+<div style="margin-bottom: 5px"><span style="font-family: Calibri, sans-serif; color: #FF0000"; font-size: 1em><strong>&#134;</strong></span><span style="font-family: Calibri, sans-serif; font-size: 1em"> If a video is to be shown, but <i><u>words need to be added</u></i> (or won&#146;t be clear in-building) please also supply those words.&nbsp; </span></div>
+
+<div style="margin-bottom: 5px"><span style="font-family: Calibri, sans-serif; color: #FF0000"; font-size: 1em><strong>^</strong></span><span style="font-family: Calibri, sans-serif; font-size: 1em"> If there&#146;s not enough room in any input area, please use the &#145;<i><u>Notes</u></i>&#146; space below the table.</span></div>
+
+<div><span style="font-family: Calibri, sans-serif; font-size: 1em">Completing the &#147;Time&#148; column is not critical, but may help you in planning.</span></div>
+</td>
+</tr>
+<tr>
+    <td width="20%" align="right"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Date/time for release</strong> (if not live):</div></td>
+    <td width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="20" name="array[]" id="Head1"/></div></td>
+</tr>
+<tr>
+    <td width="20%" align="right"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Service Leader</strong>:</div></td>
+    <td width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="20" name="array[]" id="Head2" /></div></td>
+</tr>
+<tr>
+    <td width="20%" align="right"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Preacher</strong>:</div></td>
+    <td width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="20" name="array[]"  id="Head3"/></div></td>
+</tr>
+<tr>
+    <td width="20%" align="right"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Musician(s)</strong></div></td>
+    <td width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="20" name="array[]"  id="Head4"/></div></td>
+</tr>
+</thead>
+</table>
+
+<!-- set out the heading rows of the lower table (also within the left column of the outer table) -->
+
+<table width="1200" id="dyntable" class="tt">
+<thead><tr>
+    <td valign="bottom" colspan="6" width="53%"><div style="font-family: Calibri, sans-serif; font-size: 2em">In-Building</div></td>
+    <td valign="bottom" colspan="4" width="35%"><div style="font-family: Calibri, sans-serif; font-size: 2em">Streamed</div></td>
+    <td valign="bottom" rowspan="4" width="6%" align="center"><div style="font-family: Calibri, sans-serif; font-size: 1em">Add row below current row</div></td>
+    <td valign="bottom" rowspan="4" width="6%" align="center"><div style="font-family: Calibri, sans-serif; font-size: 1em">Delete current row</div></td>
+</tr>
+<tr>
+    <td valign="bottom" rowspan="2" width="3%"><div style="font-family: Calibri, sans-serif; font-size: 1em; text-align: center"><strong>Dura-<br>tion</strong><br>1 min<br>def-<br>ault</div> </td>
+    <td valign="bottom" rowspan="2" width="4%"><div style="font-family: Calibri, sans-serif; font-size: 1em; text-align: center"><strong>Time</strong><br>(Est.)</div> </td>
+    <td valign="bottom" rowspan="2" width="20%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>In Building Activity</strong></div></td>
+    <td valign="bottom" rowspan="2" width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Responsible Person on the Day</strong></div></td>
+    <td valign="bottom" rowspan="2" width="10%"><div><span style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Media Type to be Projected</strong><br> (Pre-recorded video</span><span style="font-family: Calibri, sans-serif; color: #FF0000; font-size: 1em"><strong>&#134;</strong></span><span style="font-family: Calibri, sans-serif; font-size: 1em"> / PowerPoint / other)</span></div></td>
+    <td valign="bottom" rowspan="2" width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Originator </strong>of media</div></td>
+    <td valign="bottom" colspan="3" width="20%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Please Stream </strong>&#133;</div> </td>
+    <td valign="bottom" rowspan="2" width="15%"><div><span style="font-family: Calibri, sans-serif; font-size: 1em">Describe Anything</span><span style="font-family: Calibri, sans-serif; color: #FF0000; font-size: 1em"><strong>^</strong></span><span style="font-family: Calibri, sans-serif; font-size: 1em"> that&#146;s <strong><u>Only</u></strong><strong> to be Visible On-line</strong></span></div></td>
+</tr>
+<tr>
+    <td align="center" valign="bottom" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Camera<br> </strong>Yes/No</div> </td>
+    <td align="center" valign="bottom" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Audio<br> </strong>Yes/No</div> </td>
+    <td align="center" valign="bottom" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><strong>Proj&#146;n</strong><br>Yes/No</div> </td>
+</tr>
+<tr>
+    <td valign="bottom" width="3%"><a onclick="showPU('popup12');"><div style="font-family: Calibri, sans-serif; font-size: 1em" id="Col0000" align="center"></div></a></td>
+    <td valign="bottom" width="4%"><a onclick="showPU('popup12');"><div style="font-family: Calibri, sans-serif; font-size: 1em" id="ColTime000" align="center"></div></a></td>
+    <td valign="bottom" width="20%"><div style="font-family: Calibri, sans-serif; font-size: 1em">Pre-service Music</div></td>
+    <td valign="bottom" width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em"><input type="text" size="8" name="Resp0" id="Head5"></div></td>
+    <td valign="bottom" width="10%"><div style="font-family: Calibri, sans-serif; font-size: 1em">This week&#146;s adverts</div></td>
+    <td valign="bottom" width="8%"><div style="font-family: Calibri, sans-serif; font-size: 1em">AV Team</div></td>
+    <td align="center" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em">-</div> </td>
+    <td align="center" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em">-</div> </td>
+    <td align="center" width="5%"><div style="font-family: Calibri, sans-serif; font-size: 1em">-</div> </td>
+    <td valign="bottom" width="15%"><div style="font-family: Calibri, sans-serif; font-size: 1em">Selected adverts</div></td>
+</tr>
+</thead>
+
+<!-- leave the main content of the lower table blank (still within the left column of the outer table). It will be written on-the-fly by the JavaScript code -->
+
+<tbody id="tabbody">
+&nbsp;
+</tbody>
+
+<!-- provide the footer of the lower table (still within the left column of the outer table)  -->
+
+<tfoot>
+<tr>
+    <td valign="top" colspan="12" width="100%"><div style="font-family: Calibri, sans-serif; font-size: 1em">Notes:  <input type="text" style="color:grey" size="150" name="TabNotes" value="Add notes here" id="NotesRow"  onfocus="this.value=''; this.style.color='#000000'"></div></td>
+</tr>
+</tfoot>
+</table>
+
+<!-- provide the right hand column of the outer table containing the various control buttons  -->
+
+</td>
+<td class="twb">
+    <img src="https://primary.jwwb.nl/public/s/h/x/temp-hcjfzdftbicajvcemnth/sbc-colour-logo-250pxgif.gif" style="width:130px;height:130px;"><br><br><br>
+
+    <label for="file-input" id="file-input-label">Open Existing Schedule File</label>
+    <input type="file" id="file-input" accept="text/plain" />
+    <label id="NOT-file-input-label" style="display:none">Open Existing Schedule File</label>
+
+    <div>- OR -</div>
+
+    <button type="submit" onclick="showPU('popup12'); StartNewSched();" class="gV" id="new-input">Start New Schedule</button>
+    <label id="NOT-new-input" style="display:none" style="color:#DDDDDD">Start New Schedule</label><br>
+
+    <button type="submit" onclick="showPU('popup1')" class="gV">Instructions</button><br>
+
+    <button type="submit" onclick="showPU('popup9');" class="gV">Go back to a blank page</button><br>
+
+    <button type="submit" value="CalcTimings" onclick="CalcTime(); document.getElementById(cellId).focus();" class="gV" style="display:none" id="calc-timings">Calculate / Re-calc. timings</button>
+    <label id="NOT-calc-timings" style="display:block" style="color:#DDDDDD">Calculate / Re-calc. timings</label><br>
+
+    <button type="submit" value="SaveDataToFile" onclick="CreateTextFile();" class="gV" style="display:none" id="save-schedule">Save Schedule &nbsp;&nbsp;to File</button>
+    <label id="NOT-save-schedule" style="display:block" style="color:#DDDDDD">Save Schedule &nbsp;&nbsp;to File</label><br>
+
+    <button type="submit" value="Set-upEmail" onclick="showPU('popup8');" class="gV" style="display:none" id="email-schedule">Email Schedule &nbsp;to AV Team</button>
+    <label id="NOT-email-schedule" style="display:block" style="color:#DDDDDD">Email Schedule &nbsp;to AV Team</label>
+
+</td>
+</tr>
+</form>
+</table>
+
+<script type="text/javascript">
+
+// write start times into row zero
+    document.getElementById('Col0000').innerHTML = leadInDuration;
+    document.getElementById('ColTime000').innerHTML = liveStreamStartTime;
+
+// function that colours in pink those cells with radio buttons that are selected as 'No'
+
+const activateElement = function() {
+    var cellYN;
+    cell = this.closest('td');
+    rb = this.closest('input');
+    cellYN = rb.id.substring(4,5);
+    if (cellYN == 'Y') {
+        document.getElementById(cell.id).style.backgroundColor = "white"; 
+        } else {
+        document.getElementById(cell.id).style.backgroundColor = "pink";
+    }
+};
+
+// set up the program to listen for a request to read in data and then to spot read-errors, popping-up explanations when any occur
+
+document.querySelector("#file-input").addEventListener('change', function() {
+    // the user hasn't chosen a file when that should have happened
+    var all_files = this.files;
+    if(all_files.length == 0) {
+    	showPU('popup4');
+    	return;
+    }
+
+    // first file selected by user
+    var file = all_files[0];
+
+    // the user has chosen a non-text file
+    var allowed_types = [ 'text/plain' ];
+    if(allowed_types.indexOf(file.type) == -1) {
+    	showPU('popup5');
+    	return;
+    }
+
+    // the user has chosen a file larger than the 2kB limit allowed   
+    var max_size_allowed = 2*1024*1024
+    if(file.size > max_size_allowed) {
+	showPU('popup6');
+    	return;
+    }
+
+    // file validation was successfull and the file can now be read, so grey out buttons no-longer needed and add in green those needed
+
+    var reader = new FileReader();
+    reader.addEventListener('loadstart', function() {
+        document.querySelector("#file-input-label").style.display = 'none'; 
+        document.getElementById("NOT-file-input-label").style.display = 'block';
+        document.getElementById("new-input").style.display = 'none';
+        document.getElementById("NOT-new-input").style.display = 'block';
+        document.getElementById("NOT-calc-timings").style.display = 'none';
+        document.getElementById("calc-timings").style.display = 'block';
+        document.getElementById("NOT-save-schedule").style.display = 'none';
+        document.getElementById("save-schedule").style.display = 'block';
+        document.getElementById("NOT-email-schedule").style.display = 'none';
+        document.getElementById("email-schedule").style.display = 'block';
+    });
+
+    // when file reading has been cleared as permissible by the above checks, then set the program to listen out 
+    // for a successful reading of the file, and place the data in the right variables
+    reader.addEventListener('load', function(e) {
+        var text = e.target.result;
+
+        // define variables used to process data read in, and then to display values
+        var k;
+        var nRows;
+        var idLabel;
+        var cA;
+        var cB;
+        var cC;
+        var cD;
+        var cE;
+        var cF;
+        var cG;
+        var cH;
+        var cI;
+        const myArray = text.split('|');  
+        nRows = myArray[0];
+
+        // fill upper part of the table
+        for (let CellNo = 0; CellNo < 6; CellNo++) {
+            k = CellNo + 1;
+            idLabel = 'Head' + CellNo;
+            document.getElementById(idLabel).value = myArray[k];
+        }        
+//        alert(9 + (18 * nRows) + '    ' + myArray[9 + (18 * nRows)]);
+        leadInDuration = Number(myArray[9 + (18 * nRows)]);
+        document.getElementById('Col0000').innerHTML = Number(myArray[9 + (18 * nRows)]);
+//        alert(10 + (18 * nRows) + '    ' + myArray[10 + (18 * nRows)]);
+        liveStreamStartTime = myArray[10 + (18 * nRows)];
+        document.getElementById('ColTime000').innerHTML = myArray[10 + (18 * nRows)]; 
+
+        // construct the lower table with the right number of lines
+        for (let i = 1; i < (Number(nRows) + 1) ; i++) {
+            cA = myArray[(i-1) * 18 + 7];
+            cB = myArray[(i-1) * 18 + 8];
+            cC = myArray[(i-1) * 18 + 9];
+            cD = myArray[(i-1) * 18 + 10];
+            cE = myArray[(i-1) * 18 + 11];
+            cF = myArray[(i-1) * 18 + 18];
+            cG = myArray[(i-1) * 18 + 22];
+            cH = myArray[(i-1) * 18 + 23];
+            cI = myArray[(i-1) * 18 + 24];
+            addRow(i, cA, cB, cC, cD, cE, cF, cG, cH, cI);
+        }; 
+
+        // now display the lower table on the web-page
+        var divref = document.getElementById('tabbody');
+        divref.innerHTML = newRowsHTML;
+        document.querySelectorAll("input[type=radio]").forEach((input) => {input.addEventListener('change', activateElement);});
+        idcount = Number(nRows);
+        document.getElementById('NotesRow').value = myArray[8 + (18 * nRows)];       
+    });
+
+    // set-up program to listen out for when file reading fails and pup-up an appropriate message
+    reader.addEventListener('error', function() { showPU('popup7'); });
+
+    // now actually read the file as text
+    reader.readAsText(file);
+});
+
+// function to check times input at start of a new schedule
+function setStartTimes() {
+    GoTime = document.getElementById('GoTime').value;
+    regexp = /^(2[0-3]|[01]?[0-9]):([0-5]?[0-9])$/;
+        if (!regexp.test(GoTime)) {
+            document.getElementById('PU12warning').innerHTML = 'Invalid start time format. Please use hh:mm'
+        } else {
+            leadInDuration = Number(document.getElementById('leadInDuration').value);
+            if ((leadInDuration<100) && (leadInDuration>-1)) {
+                let GoTimeSubStr = GoTime.split(':'); 
+                StartTimeMin = (Number(GoTimeSubStr[0]) * 60) + Number(GoTimeSubStr[1]) - leadInDuration;
+                rowRemMin = StartTimeMin % 60;
+                liveStreamStartTime = ((StartTimeMin/60 |0) % 24) + ':' +  rowRemMin.toString().padStart(2, '0');   
+//alert(  liveStreamStartTime );
+                document.getElementById('Col0000').innerHTML = leadInDuration;
+                document.getElementById('ColTime000').innerHTML = liveStreamStartTime;
+                hidePU('popup12');
+            } else {
+                document.getElementById('PU12warning').innerHTML = 'Invalid run-in format; must be 0-99min'
+            }
+        }
+}
+    
+</script>
+</body>
+
+</html>
+
+
